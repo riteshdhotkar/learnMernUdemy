@@ -29,7 +29,7 @@ router.get('/me', auth, async (req,res) => {
 
 });
 
-//@route    GET api/profile/
+//@route    POST api/profile/
 //@desc     Create or update user profile
 //@access   private
 
@@ -67,11 +67,11 @@ async (req,res) => {
     profileFields.user = req.user.id;
 
     if(company) profileFields.company = company;
-    if(website) profileFields.company = website;
-    if(location) profileFields.company = location;
-    if(bio) profileFields.company = bio;
-    if(status) profileFields.company = status;
-    if(githubusername) profileFields.company = githubusername;
+    if(website) profileFields.website = website;
+    if(location) profileFields.location = location;
+    if(bio) profileFields.bio = bio;
+    if(status) profileFields.status = status;
+    if(githubusername) profileFields.githubusername = githubusername;
 
     if(skills){
         profileFields.skills = skills.split(',').map(skill => skill.trim());
@@ -116,5 +116,69 @@ async (req,res) => {
 
 
 })
+
+//@route    GET api/profile/
+//@desc     Get all profiles
+//@access   public
+
+router.get('/', async (req,res) => {
+    try {
+        const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+        res.json(profiles);
+        
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+})
+
+//@route    GET api/profile/user/:user_id
+//@desc     Get profile by user_id
+//@access   public
+
+router.get('/user/:user_id', async (req,res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.params.user_id}).populate('user', ['name', 'avatar']);
+
+        if(!profile) return res.status(400).json({msg: 'Profile not found'});
+
+
+
+        res.json(profile);
+
+
+        
+    } catch (err) {
+        console.error(err.message);
+        if(err.kind == 'ObjectId') {
+            return res.status(400).json({msg: 'Profile not found'});
+        }
+        res.status(500).send('Server error');
+    }
+})
+
+
+//@route    DELETE api/profile/
+//@desc     Delete profile, user and posts 
+//@access   private
+
+router.delete('/', auth, async (req,res) => {
+    try {
+        //@todo remove user posts
+
+        //remote profile
+        await Profile.findOneAndRemove({ user: req.user.id});
+
+        //remove user 
+        await User.findOneAndRemove({ _id: req.user.id});
+
+        res.json({ msg: 'User Deleted'});
+        
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+})
+
 
 module.exports = router;
