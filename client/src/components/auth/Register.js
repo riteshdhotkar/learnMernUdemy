@@ -1,6 +1,16 @@
-import React, {Fragment} from 'react'
+import React, {Fragment, useState} from 'react'
 
 const Register = () => {
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    password2: ''
+  });
+
+  const [ name, email, password, password2] =formData;
+
   return (
     <Fragment>
         
@@ -9,7 +19,7 @@ const Register = () => {
       <p class="lead"><i class="fas fa-user"></i> Create Your Account</p>
       <form class="form" action="create-profile.html">
         <div class="form-group">
-          <input type="text" placeholder="Name" name="name" required />
+          <input type="text" placeholder="Name" name="name" value={name} required />
         </div>
         <div class="form-group">
           <input type="email" placeholder="Email Address" name="email" />
